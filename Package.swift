@@ -10,6 +10,15 @@ let package = Package(
         targets: ["sourcekit-lsp"]
       ),
       .library(
+        name: "SourceKitLSP",
+        type: .static,
+        targets: [
+          "SourceKit",
+          "LanguageServerProtocol",
+          "LanguageServerProtocolJSONRPC",
+        ]
+      ),
+      .library(
         name: "LSPBindings",
         type: .static,
         targets: [
