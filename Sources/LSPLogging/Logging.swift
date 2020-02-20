@@ -75,25 +75,37 @@ public final class Logger {
   let logQueue: DispatchQueue = DispatchQueue(label: "log-queue", qos: .utility)
 
   /// - note: This is separate from the logging queue to make it as fast as possible. Ideally we'd use a relaxed atomic.
-  let logLevelQueue: DispatchQueue = DispatchQueue(label: "log-level-queue", qos: .userInitiated)
+  let logOptionsQueue: DispatchQueue = DispatchQueue(label: "log-options-queue", qos: .userInitiated)
 
   var _currentLevel: LogLevel = .warning
 
-  var disableOSLog: Bool = false
+  var _disableOSLog: Bool = false
+  
+  var _disableNSLog: Bool = false
 
-  var disableNSLog: Bool = false
+  /// Disable os_log.
+  public var disableOSLog: Bool {
+    get { return logOptionsQueue.sync { _disableOSLog } }
+    set { logOptionsQueue.sync { _disableOSLog = newValue } }
+  }
+
+  /// Disable NSLog.
+  public var disableNSLog: Bool {
+    get { return logOptionsQueue.sync { _disableNSLog } }
+    set { logOptionsQueue.sync { _disableNSLog = newValue } }
+  }
 
   /// The current logging level.
   public var currentLevel: LogLevel {
-    get { return logLevelQueue.sync { _currentLevel } }
-    set { logLevelQueue.sync { _currentLevel = newValue } }
+    get { return logOptionsQueue.sync { _currentLevel } }
+    set { logOptionsQueue.sync { _currentLevel = newValue } }
   }
 
   var handlers: [LogHandler] = []
 
   public init(disableOSLog: Bool = false, disableNSLog: Bool = false) {
-    self.disableOSLog = disableOSLog
-    self.disableNSLog = disableNSLog
+    self._disableOSLog = disableOSLog
+    self._disableNSLog = disableNSLog
   }
 
   public func addLogHandler(_ handler: LogHandler) {
