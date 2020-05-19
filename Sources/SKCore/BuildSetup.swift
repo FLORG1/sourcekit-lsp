@@ -13,6 +13,7 @@
 import TSCBasic
 import TSCUtility
 import SKSupport
+import Build
 
 /// Build configuration
 public struct BuildSetup {
@@ -31,9 +32,21 @@ public struct BuildSetup {
   /// Additional build flags
   public var flags: BuildFlags
 
-  public init(configuration: BuildConfiguration, path: AbsolutePath?, flags: BuildFlags) {
+  /// SDK root
+  public var sdkRoot: AbsolutePath?
+
+  /// Target triple
+  public var triple: Triple?
+
+  public init(configuration: BuildConfiguration,
+              path: AbsolutePath?,
+              flags: BuildFlags,
+              sdkRoot: AbsolutePath? = nil,
+              triple: Triple? = nil) {
     self.configuration = configuration
     self.path = path
     self.flags = flags
+    self.sdkRoot = sdkRoot
+    self.triple = triple
   }
 }

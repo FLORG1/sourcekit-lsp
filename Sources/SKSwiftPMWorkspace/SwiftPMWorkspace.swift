@@ -80,7 +80,46 @@ public final class SwiftPMWorkspace {
         throw Error.cannotDetermineHostToolchain
     }
 
-    let destination = try Destination.hostDestination(destinationToolchainBinDir)
+    var triple = Triple.getHostTriple(usingSwiftCompiler: toolchainRegistry.default!.swiftc!)
+    if let t = buildSetup.triple {
+      triple = t
+    }
+
+    let hostDestination = try Destination.hostDestination(destinationToolchainBinDir)
+
+    var destination: Destination
+    if (triple.os == .macOS) {
+      destination = hostDestination
+    } else {
+      var dict: [String : JSON] = [:]
+      dict["version"] = JSON.int(1)
+      dict["target"] = JSON.string(triple.tripleString)
+
+      if let root = buildSetup.sdkRoot {
+        dict["sdk"] = JSON.string(root.pathString)
+      }
+
+      dict["toolchain-bin-dir"] = JSON.string(destinationToolchainBinDir.pathString)
+
+      var flags : [JSON] = []
+
+      if let root = buildSetup.sdkRoot {
+        flags.append(JSON.string("-sdk"))
+        flags.append(JSON.string(root.pathString))
+      }
+
+      for flag in buildSetup.flags.swiftCompilerFlags {
+        flags.append(JSON.string(flag))
+      }
+
+      dict["extra-swiftc-flags"] = JSON.array(flags)
+      dict["extra-cc-flags"] = JSON.array([])
+      dict["extra-cpp-flags"] = JSON.array([])
+
+      destination = try Destination(json: JSON.dictionary(dict))
+    }
+
+    let hostToolchain = try UserToolchain(destination: hostDestination)
     let toolchain = try UserToolchain(destination: destination)
 
     let buildPath: AbsolutePath = buildSetup.path ?? packageRoot.appending(component: ".build")
@@ -89,12 +128,10 @@ public final class SwiftPMWorkspace {
       dataPath: buildPath,
       editablesPath: packageRoot.appending(component: "Packages"),
       pinsFile: packageRoot.appending(component: "Package.resolved"),
-      manifestLoader: ManifestLoader(manifestResources: toolchain.manifestResources, cacheDir: buildPath),
+      manifestLoader: ManifestLoader(manifestResources: hostToolchain.manifestResources, cacheDir: buildPath),
       delegate: BuildSettingProviderWorkspaceDelegate(),
       fileSystem: fileSystem,
       skipUpdate: true)
-
-    let triple = toolchain.triple
 
     let swiftPMConfiguration: PackageModel.BuildConfiguration
     switch buildSetup.configuration {
@@ -108,6 +145,7 @@ public final class SwiftPMWorkspace {
       dataPath: buildPath.appending(component: triple.tripleString),
       configuration: swiftPMConfiguration,
       toolchain: toolchain,
+      destinationTriple: triple,
       flags: buildSetup.flags)
 
     self.packageGraph = PackageGraph(rootPackages: [], requiredDependencies: [])
