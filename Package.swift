@@ -106,6 +106,7 @@ let package = Package(
           "LanguageServerProtocolJSONRPC",
           "SKSupport",
           "SwiftToolsSupport-auto",
+          "SwiftPM-auto",
         ]
       ),
       .testTarget(
