@@ -11,7 +11,7 @@ let package = Package(
       ),
       .library(
         name: "SourceKitLSP",
-        type: .static,
+        type: .dynamic,
         targets: [
           "SourceKit",
           "LanguageServerProtocol",
