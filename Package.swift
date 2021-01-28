@@ -199,9 +199,9 @@ import Darwin.C
 if getenv("SWIFTCI_USE_LOCAL_DEPS") == nil {
   // Building standalone.
   package.dependencies += [
-    .package(url: "https://github.com/apple/indexstore-db.git", .branch("master")),
-    .package(url: "https://github.com/apple/swift-package-manager.git", .branch("master")),
-    .package(url: "https://github.com/apple/swift-tools-support-core.git", .branch("master")),
+    .package(url: "https://github.com/apple/indexstore-db.git", .branch("release/5.3")),
+    .package(url: "https://github.com/apple/swift-package-manager.git", .branch("release/5.3")),
+    .package(url: "https://github.com/apple/swift-tools-support-core.git", .branch("release/5.3")),
   ]
 } else {
   package.dependencies += [
