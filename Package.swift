@@ -10,6 +10,13 @@ let package = Package(
         targets: ["sourcekit-lsp"]
       ),
       .library(
+        name: "SourceKitLSP",
+        type: .dynamic,
+        targets: [
+          "SourceKit",
+        ]
+      ),
+      .library(
         name: "LSPBindings",
         type: .static,
         targets: [
